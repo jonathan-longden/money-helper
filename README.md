@@ -39,6 +39,12 @@ server, and nothing is transmitted anywhere — which also means:
 
 - **The ledger does not sync between phones.** Install it on each device that
   needs it.
+- **The app cannot notify you on its own.** Scheduling a notification to fire
+  while a web app is closed needs a push server, which this deliberately has
+  no part of. Instead, *Edit income, expenses & debts → Reminders* exports an
+  `.ics` file so your phone's calendar does the reminding — an alert 24 hours
+  before each bill and one on payday to move your set-aside amount. Export
+  again after changing anything.
 - **Clearing browser data deletes it.** Open *Edit income, expenses & debts →
   Backup* to save a JSON file, and *Restore* to load it on another device or
   after a reset. Restoring replaces the ledger on that device.
@@ -71,6 +77,7 @@ clean checkout builds without network access to either.
 | `src/App.jsx` | The ledger — budget maths, spending log, setup editor |
 | `src/lib/storage.js` | `localStorage` persistence and backup export/import |
 | `src/lib/schedule.js` | Paydays, due dates, and the month timeline |
+| `src/lib/calendar.js` | Builds the .ics reminder file |
 | `src/components/` | Install prompt, update toast, backup, dated cards |
 | `src/index.css` | Design system: the gold-on-green ledger styling |
 | `vite.config.js` | Build config, PWA manifest and service worker |
