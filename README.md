@@ -17,9 +17,12 @@ screen, opens without browser chrome, and works with no signal.
 
 The included workflow publishes to GitHub Pages on every push to `main`:
 
-1. Push this repo to GitHub.
-2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-3. Push to `main`. The app lands at `https://<user>.github.io/<repo>/`.
+1. Push this repo to GitHub. The repo must be public unless the account has a
+   paid plan — Pages doesn't serve private repos on GitHub Free.
+2. Push to `main`. The app lands at `https://<user>.github.io/<repo>/`.
+
+The workflow enables Pages and sets it to build from Actions on its own, so
+there's no settings visit to remember.
 
 Nothing about the app is host-specific, so any static host works — run
 `npm run build` and upload `dist/`. If it's served from a subpath, set
