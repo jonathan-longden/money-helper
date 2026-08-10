@@ -8,6 +8,7 @@ import {
   PiggyBank,
   Receipt,
   Landmark,
+  Wallet,
 } from "lucide-react";
 
 import InstallBar from "./components/InstallBar.jsx";
@@ -214,7 +215,6 @@ export default function App() {
   const discretionary = leftover - setAsideAmount;
   const spentSoFar = spending.reduce((s, x) => s + (Number(x.amount) || 0), 0);
   const remaining = discretionary - spentSoFar;
-  const animatedSetAside = useCountUp(setAsideAmount);
 
   let status = "ok";
   if (leftover < 0) status = "deficit";
@@ -350,53 +350,37 @@ export default function App() {
         </button>
       )}
 
-      {/* Hero: set-aside figure */}
-      <div
-        className="relative mx-5 mt-6 rounded-xl overflow-hidden gold-card gold-frame card-hover rise-in"
-        style={{ animationDelay: "60ms" }}
-      >
-        {status === "ok" && (
-          <div
-            className="seal-pop absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center"
-            style={{
-              animationDelay: "550ms",
-              background:
-                "radial-gradient(circle at 35% 30%, #F6E7B0, #CBA135 65%, #8A6A1F 100%)",
-              boxShadow:
-                "0 3px 10px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.4)",
-            }}
-          >
-            <span className="lg-serif italic text-[13px] text-[#1A1208] leading-none">
-              HL
-            </span>
-          </div>
-        )}
-        <div className="px-6 pt-7 pb-3">
-          <div className="flex items-center gap-1.5 text-[#CBA135] lg-mono text-[10.5px] tracking-[0.2em] uppercase">
-            <PiggyBank size={13} /> Set aside this month
-          </div>
-          <div className="lg-serif text-[46px] leading-none font-semibold mt-2 figure-transition foil-text">
-            {money(animatedSetAside)}
-          </div>
-          <div className="lg-sans text-[12px] text-[#B9AF98] mt-2">
-            {setup.setAsidePercent}% of {money(Math.max(leftover, 0))} left over
-            after fixed costs and debt minimums
-          </div>
-        </div>
-        <div className="px-6 pb-6 pt-2">
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={setup.setAsidePercent}
-            onChange={(e) =>
-              saveSetup({ ...setup, setAsidePercent: Number(e.target.value) })
-            }
-            aria-label="Percent of leftover money to set aside"
-            className="gold-slider w-full"
-          />
-        </div>
-      </div>
+      {/* The two halves of what's left over. Both sliders drive the same
+          split, so dragging either one moves the other. */}
+      <BucketCard
+        icon={<PiggyBank size={13} />}
+        label="Set aside this month"
+        amount={setAsideAmount}
+        percent={setup.setAsidePercent}
+        onPercentChange={(pct) => saveSetup({ ...setup, setAsidePercent: pct })}
+        sliderLabel="Percent of leftover money to set aside"
+        note={`${setup.setAsidePercent}% of ${money(
+          Math.max(leftover, 0)
+        )} left over after fixed costs and debt minimums`}
+        seal={status === "ok"}
+        animationDelay="60ms"
+        spacing="mt-6"
+      />
+
+      <BucketCard
+        icon={<Wallet size={13} />}
+        label="Spending money this month"
+        amount={discretionary}
+        percent={100 - setup.setAsidePercent}
+        onPercentChange={(pct) =>
+          saveSetup({ ...setup, setAsidePercent: 100 - pct })
+        }
+        sliderLabel="Percent of leftover money to keep as spending money"
+        note={`${100 - setup.setAsidePercent}% of ${money(
+          Math.max(leftover, 0)
+        )} left over — ${money(spentSoFar)} spent so far`}
+        animationDelay="90ms"
+      />
 
       {/* Status banner */}
       <div
@@ -604,6 +588,70 @@ export default function App() {
       </p>
 
       <UpdateToast />
+    </div>
+  );
+}
+
+/**
+ * One half of the leftover money, as a headline figure with the slider that
+ * sizes it. Both cards share the single setAsidePercent split, so each one
+ * reports its own side of it.
+ */
+function BucketCard({
+  icon,
+  label,
+  amount,
+  percent,
+  onPercentChange,
+  sliderLabel,
+  note,
+  seal,
+  animationDelay,
+  spacing = "mt-4",
+}) {
+  const animated = useCountUp(amount);
+
+  return (
+    <div
+      className={`relative mx-5 ${spacing} rounded-xl overflow-hidden gold-card gold-frame card-hover rise-in`}
+      style={{ animationDelay }}
+    >
+      {seal && (
+        <div
+          className="seal-pop absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center"
+          style={{
+            animationDelay: "550ms",
+            background:
+              "radial-gradient(circle at 35% 30%, #F6E7B0, #CBA135 65%, #8A6A1F 100%)",
+            boxShadow:
+              "0 3px 10px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.4)",
+          }}
+        >
+          <span className="lg-serif italic text-[13px] text-[#1A1208] leading-none">
+            HL
+          </span>
+        </div>
+      )}
+      <div className="px-6 pt-7 pb-3">
+        <div className="flex items-center gap-1.5 text-[#CBA135] lg-mono text-[10.5px] tracking-[0.2em] uppercase">
+          {icon} {label}
+        </div>
+        <div className="lg-serif text-[46px] leading-none font-semibold mt-2 figure-transition foil-text">
+          {money(animated)}
+        </div>
+        <div className="lg-sans text-[12px] text-[#B9AF98] mt-2">{note}</div>
+      </div>
+      <div className="px-6 pb-6 pt-2">
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={percent}
+          onChange={(e) => onPercentChange(Number(e.target.value))}
+          aria-label={sliderLabel}
+          className="gold-slider w-full"
+        />
+      </div>
     </div>
   );
 }
