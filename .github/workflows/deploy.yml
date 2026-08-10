@@ -34,7 +34,14 @@ jobs:
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
 
+      # `enablement` makes the workflow set the Pages build type itself. With
+      # it off, the deploy job dies instantly and logless whenever the repo's
+      # Pages source is left on "Deploy from a branch" — configure-pages still
+      # passes there, because it only checks that a Pages site exists at all.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
