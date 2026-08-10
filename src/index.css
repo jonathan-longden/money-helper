@@ -1,0 +1,248 @@
+@import "tailwindcss";
+@import "./fonts.css";
+
+:root {
+  color-scheme: dark;
+  --ledger-ink: #0e1712;
+  --ledger-gold: #cba135;
+}
+
+html,
+body {
+  background: var(--ledger-ink);
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  /* Stops the rubber-band overscroll that makes an installed PWA feel like a
+     web page rather than an app. */
+  overscroll-behavior-y: none;
+}
+
+/* Installed on iOS the app runs under the status bar and home indicator. */
+.safe-top {
+  padding-top: max(2.25rem, env(safe-area-inset-top));
+}
+.safe-bottom {
+  padding-bottom: max(4rem, calc(env(safe-area-inset-bottom) + 3rem));
+}
+
+.lg-serif {
+  font-family: "Playfair Display", Georgia, serif;
+}
+.lg-mono {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+.lg-sans {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.velvet-grain {
+  background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(203, 161, 53, 0.05) 1px,
+      transparent 0
+    ),
+    radial-gradient(ellipse at top, rgba(203, 161, 53, 0.06), transparent 55%);
+  background-size: 14px 14px, 100% 100%;
+  background-attachment: fixed;
+}
+
+.foil-text {
+  background: linear-gradient(
+    100deg,
+    #8a6a1f 0%,
+    #e4c766 22%,
+    #f6e7b0 32%,
+    #cba135 45%,
+    #8a6a1f 60%,
+    #e4c766 78%,
+    #cba135 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: foilSweep 7s ease-in-out infinite;
+}
+@keyframes foilSweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gold-card {
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.045),
+    rgba(255, 255, 255, 0.015)
+  );
+  border: 1px solid rgba(203, 161, 53, 0.28);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(6px);
+}
+.gold-frame {
+  position: relative;
+}
+.gold-frame::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(203, 161, 53, 0.22);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.hairline {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(203, 161, 53, 0.4),
+    transparent
+  );
+}
+.accent-underline {
+  height: 2px;
+  width: 46px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #e4c766, #cba135);
+}
+
+input[type="range"].gold-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+input[type="range"].gold-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  background: rgba(203, 161, 53, 0.25);
+  border-radius: 2px;
+}
+input[type="range"].gold-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6e7b0, #cba135 70%);
+  cursor: pointer;
+  margin-top: -6px;
+  box-shadow: 0 0 0 4px rgba(203, 161, 53, 0.16), 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.15s ease;
+}
+input[type="range"].gold-slider:active::-webkit-slider-thumb {
+  box-shadow: 0 0 0 7px rgba(203, 161, 53, 0.22);
+}
+input[type="range"].gold-slider::-moz-range-track {
+  height: 3px;
+  background: rgba(203, 161, 53, 0.25);
+  border-radius: 2px;
+}
+input[type="range"].gold-slider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6e7b0, #cba135 70%);
+  cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(203, 161, 53, 0.16), 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise-in {
+  animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes sealPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-18deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08) rotate(-6deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-6deg);
+  }
+}
+.seal-pop {
+  animation: sealPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 2.4s ease-in-out infinite;
+}
+
+.card-hover {
+  transition: box-shadow 0.25s ease, transform 0.25s ease,
+    border-color 0.25s ease;
+}
+@media (hover: hover) {
+  .card-hover:hover {
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+    transform: translateY(-1px);
+    border-color: rgba(203, 161, 53, 0.5);
+  }
+}
+.figure-transition {
+  transition: filter 0.4s ease;
+}
+
+.gold-input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(203, 161, 53, 0.2);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.gold-input:focus {
+  border-color: #cba135;
+  background: rgba(203, 161, 53, 0.06);
+  outline: none;
+}
+
+::selection {
+  background: rgba(203, 161, 53, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
