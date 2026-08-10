@@ -28,6 +28,10 @@ jobs:
 
       - run: npm ci
 
+      # Date arithmetic decides when reminders fire, so a failure here should
+      # stop the deploy rather than ship wrong dates.
+      - run: npm test
+
       # A project Pages site is served from /<repo>/, so the bundle, the
       # manifest scope and the service worker all need that prefix.
       - run: npm run build

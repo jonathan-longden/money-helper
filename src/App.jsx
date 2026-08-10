@@ -14,6 +14,7 @@ import {
 import InstallBar from "./components/InstallBar.jsx";
 import UpdateToast from "./components/UpdateToast.jsx";
 import BackupControls from "./components/BackupControls.jsx";
+import CalendarExport from "./components/CalendarExport.jsx";
 import HoldBackCard from "./components/HoldBackCard.jsx";
 import MonthTimeline from "./components/MonthTimeline.jsx";
 import { money, ordinal } from "./lib/format.js";
@@ -494,6 +495,13 @@ export default function App() {
               }
               onRemove={(id) => removeRow("debts", id)}
             />
+
+            <div>
+              <div className="lg-sans text-[12px] font-semibold text-[#D8CBA5] mb-1.5 tracking-wide">
+                Reminders
+              </div>
+              <CalendarExport setup={setup} onError={setErr} />
+            </div>
 
             <div>
               <div className="lg-sans text-[12px] font-semibold text-[#D8CBA5] mb-1.5 tracking-wide">
