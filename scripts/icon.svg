@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="foil" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#F6E7B0"/>
+      <stop offset="65%" stop-color="#CBA135"/>
+      <stop offset="100%" stop-color="#8A6A1F"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="#0E1712"/>
+  <circle cx="256" cy="256" r="176" fill="url(#foil)"/>
+  <text x="256" y="293" font-family="Georgia, 'Times New Roman', serif" font-style="italic"
+        font-size="131" fill="#1A1208" text-anchor="middle">HL</text>
+</svg>
