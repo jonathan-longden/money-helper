@@ -14,6 +14,9 @@ import {
 import InstallBar from "./components/InstallBar.jsx";
 import UpdateToast from "./components/UpdateToast.jsx";
 import BackupControls from "./components/BackupControls.jsx";
+import HoldBackCard from "./components/HoldBackCard.jsx";
+import MonthTimeline from "./components/MonthTimeline.jsx";
+import { money, ordinal } from "./lib/format.js";
 import {
   SETUP_KEY,
   WHOAMI_KEY,
@@ -27,9 +30,6 @@ import {
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-const money = (n) =>
-  (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US");
-
 const monthKey = (d = new Date()) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
@@ -42,9 +42,9 @@ const monthLabel = (key) => {
 };
 
 const emptySetup = () => ({
-  income: [{ id: uid(), name: "Paycheck", amount: 0 }],
-  expenses: [{ id: uid(), name: "Rent", amount: 0 }],
-  debts: [{ id: uid(), name: "Credit card", minPayment: 0 }],
+  income: [{ id: uid(), name: "Paycheck", amount: 0, day: 1 }],
+  expenses: [{ id: uid(), name: "Rent", amount: 0, day: 1 }],
+  debts: [{ id: uid(), name: "Credit card", minPayment: 0, day: 1 }],
   setAsidePercent: 20,
   names: ["Partner 1", "Partner 2"],
 });
@@ -61,6 +61,9 @@ const normalizeSetup = (raw) => {
           id: r?.id ?? uid(),
           name: typeof r?.name === "string" ? r.name : "Untitled",
           [amountField]: Number(r?.[amountField]) || 0,
+          // Ledgers saved before dates existed have no day — default them to
+          // the 1st rather than dropping the row.
+          day: Math.min(31, Math.max(1, Math.round(Number(r?.day) || 1))),
         }))
       : fallback;
 
@@ -401,6 +404,10 @@ export default function App() {
         </div>
       </div>
 
+      <HoldBackCard setup={setup} />
+
+      <MonthTimeline setup={setup} month={month} />
+
       {/* Breakdown */}
       <div className="mx-5 mt-7 rise-in" style={{ animationDelay: "120ms" }}>
         <div className="lg-mono text-[10.5px] tracking-[0.2em] text-[#CBA135]/80 uppercase mb-2">
@@ -456,8 +463,11 @@ export default function App() {
               title="Income"
               rows={setup.income}
               amountField="amount"
+              dayLabel="Arrives on the"
               onChange={(id, f, v) => updateRow("income", id, f, v)}
-              onAdd={() => addRow("income", { name: "New source", amount: 0 })}
+              onAdd={() =>
+                addRow("income", { name: "New source", amount: 0, day: 1 })
+              }
               onRemove={(id) => removeRow("income", id)}
             />
             <EditSection
@@ -465,8 +475,11 @@ export default function App() {
               title="Fixed expenses"
               rows={setup.expenses}
               amountField="amount"
+              dayLabel="Goes out on the"
               onChange={(id, f, v) => updateRow("expenses", id, f, v)}
-              onAdd={() => addRow("expenses", { name: "New expense", amount: 0 })}
+              onAdd={() =>
+                addRow("expenses", { name: "New expense", amount: 0, day: 1 })
+              }
               onRemove={(id) => removeRow("expenses", id)}
             />
             <EditSection
@@ -474,8 +487,11 @@ export default function App() {
               title="Debt minimum payments"
               rows={setup.debts}
               amountField="minPayment"
+              dayLabel="Goes out on the"
               onChange={(id, f, v) => updateRow("debts", id, f, v)}
-              onAdd={() => addRow("debts", { name: "New debt", minPayment: 0 })}
+              onAdd={() =>
+                addRow("debts", { name: "New debt", minPayment: 0, day: 1 })
+              }
               onRemove={(id) => removeRow("debts", id)}
             />
 
@@ -680,7 +696,18 @@ function Row({ label, value, bold, line }) {
   );
 }
 
-function EditSection({ icon, title, rows, amountField, onChange, onAdd, onRemove }) {
+const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+
+function EditSection({
+  icon,
+  title,
+  rows,
+  amountField,
+  dayLabel,
+  onChange,
+  onAdd,
+  onRemove,
+}) {
   return (
     <div>
       <div className="flex items-center gap-1.5 lg-sans text-[12px] font-semibold text-[#D8CBA5] mb-1.5 tracking-wide">
@@ -688,33 +715,57 @@ function EditSection({ icon, title, rows, amountField, onChange, onAdd, onRemove
       </div>
       <div className="rounded-xl gold-card divide-y divide-[#CBA135]/12 overflow-hidden">
         {rows.map((r) => (
-          <div key={r.id} className="flex items-center gap-2 px-3.5 py-2.5">
-            <input
-              value={r.name}
-              onChange={(e) => onChange(r.id, "name", e.target.value)}
-              aria-label={`${title} name`}
-              className="lg-sans flex-1 min-w-0 bg-transparent text-[13px] outline-none text-[#F3EEDF]"
-            />
-            <input
-              value={r[amountField]}
-              onChange={(e) =>
-                onChange(
-                  r.id,
-                  amountField,
-                  e.target.value === "" ? 0 : Number(e.target.value)
-                )
-              }
-              inputMode="decimal"
-              aria-label={`${title} amount`}
-              className="lg-mono w-16 bg-transparent text-[13px] text-right outline-none text-[#F3EEDF]"
-            />
-            <button
-              onClick={() => onRemove(r.id)}
-              aria-label={`Remove ${r.name}`}
-              className="text-[#E7B4A8]/60 hover:text-[#E7B4A8]"
-            >
-              <Trash2 size={13} />
-            </button>
+          <div key={r.id} className="px-3.5 py-2.5">
+            <div className="flex items-center gap-2">
+              <input
+                value={r.name}
+                onChange={(e) => onChange(r.id, "name", e.target.value)}
+                aria-label={`${title} name`}
+                className="lg-sans flex-1 min-w-0 bg-transparent text-[13px] outline-none text-[#F3EEDF]"
+              />
+              <input
+                value={r[amountField]}
+                onChange={(e) =>
+                  onChange(
+                    r.id,
+                    amountField,
+                    e.target.value === "" ? 0 : Number(e.target.value)
+                  )
+                }
+                inputMode="decimal"
+                aria-label={`${title} amount`}
+                className="lg-mono w-16 bg-transparent text-[13px] text-right outline-none text-[#F3EEDF]"
+              />
+              <button
+                onClick={() => onRemove(r.id)}
+                aria-label={`Remove ${r.name}`}
+                className="text-[#E7B4A8]/60 hover:text-[#E7B4A8]"
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="lg-sans text-[11px] text-[#8FA396]">
+                {dayLabel}
+              </span>
+              <select
+                value={r.day ?? 1}
+                onChange={(e) => onChange(r.id, "day", Number(e.target.value))}
+                aria-label={`${title} — ${dayLabel}`}
+                className="gold-input lg-mono text-[11px] text-[#D8CBA5] rounded px-1.5 py-0.5"
+              >
+                {DAYS.map((d) => (
+                  <option key={d} value={d}>
+                    {ordinal(d)}
+                  </option>
+                ))}
+              </select>
+              {r.day > 28 && (
+                <span className="lg-sans text-[10.5px] text-[#8FA396]">
+                  (or the last day, in shorter months)
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>

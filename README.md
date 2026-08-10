@@ -50,6 +50,7 @@ npm install
 npm run dev        # local dev server
 npm run build      # production build into dist/
 npm run preview    # serve the built app (needed to exercise the service worker)
+npm test           # date/schedule logic (node's built-in runner, no deps)
 ```
 
 Two generators only need re-running when their inputs change:
@@ -69,7 +70,8 @@ clean checkout builds without network access to either.
 | --- | --- |
 | `src/App.jsx` | The ledger — budget maths, spending log, setup editor |
 | `src/lib/storage.js` | `localStorage` persistence and backup export/import |
-| `src/components/` | Install prompt, update toast, backup controls |
+| `src/lib/schedule.js` | Paydays, due dates, and the month timeline |
+| `src/components/` | Install prompt, update toast, backup, dated cards |
 | `src/index.css` | Design system: the gold-on-green ledger styling |
 | `vite.config.js` | Build config, PWA manifest and service worker |
 | `scripts/` | Icon and font generators |
